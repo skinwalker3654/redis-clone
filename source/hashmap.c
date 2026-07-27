@@ -252,6 +252,6 @@ int map_remove(HashMap *map, char *key) {
         current = current->next;
     }
 
-    printf("error key '%s' was not found in the list\n",key);
+    printf("(nil)\n");
     return -1;
 }

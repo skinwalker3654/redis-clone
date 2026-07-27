@@ -27,6 +27,7 @@ int op_set(HashMap **map, command_t *comm) {
         return -1;
     }
 
+    printf("OK\n");
     return 0;
 }
 
@@ -39,7 +40,7 @@ int op_get(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf("error key '%s' was not found in the list\n",comm->argv[1]);
+        printf("(nil)\n");
         return -1;
     }
 
@@ -72,6 +73,7 @@ int op_del(HashMap **map, command_t *comm) {
     if(map_remove(*map,comm->argv[1])==-1) 
         return -1;
 
+    printf("(integer): 1\n");
     return 0;
 }
 
@@ -84,11 +86,11 @@ int op_exists(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf("exists_status: 0\n");
+        printf("(integer): 0\n");
         return 0;
     }
 
-    printf("exists_status: 1\n");
+    printf("(integer): 1\n");
     return 0;
 }
 
@@ -103,6 +105,7 @@ int op_flushall(HashMap **map, command_t *comm) {
     *map = map_init();
     if(!map) return -1;
 
+    printf("OK\n");
     return 0;
 }
 
@@ -126,7 +129,7 @@ int op_lrange(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf("error key '%s' was not found in the list\n",comm->argv[1]);
+        printf("(nil)\n");
         return -1;
     }
 
@@ -225,6 +228,7 @@ int op_rpush(HashMap **map, command_t *comm) {
             return -1;
         }
 
+        printf("(integer): %d\n",comm->counter-2);
         return 0;
     }
 
@@ -254,6 +258,7 @@ int op_rpush(HashMap **map, command_t *comm) {
         }
     }
 
+    printf("(integer): %d\n",comm->counter-2);
     return 0;
 }
 
@@ -266,7 +271,7 @@ int op_rpop(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf("error key '%s' was not found in the list\n",comm->argv[1]);
+        printf("(nil)\n");
         return -1;
     }
 
@@ -301,7 +306,7 @@ int op_lset(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf("error key '%s' was not found in the list\n",comm->argv[1]);
+        printf("(nil)\n");
         return -1;
     }
 
@@ -340,6 +345,7 @@ int op_lset(HashMap **map, command_t *comm) {
     value_destroy(value->list->items[index]);
     value->list->items[index] = value_temp;
 
+    printf("OK\n");
     return 0;
 }
 
@@ -351,7 +357,10 @@ int op_lindex(HashMap **map, command_t *comm) {
     }
 
     Value *value = map_get(*map, comm->argv[1]);
-    if(!value) return -1;
+    if(!value) {
+        printf("(nil)\n");
+        return -1;
+    }
 
     if(value->type != VAL_LIST) {
         printf("error lindex command only works on lists\n");
@@ -394,11 +403,11 @@ int op_ttl(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf("error key '%s' does not found in the list\n",comm->argv[1]);
+        printf("(nil)\n");
         return -1;
     }
 
-    printf("time remaining: %llds\n",value->expire_at - time(NULL));
+    printf("(integer): %lld\n",value->expire_at - time(NULL));
     return 0;
 }
 
@@ -411,7 +420,7 @@ int op_expire(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf("error key '%s' does not found in the list\n",comm->argv[1]);
+        printf("(nil)\n");
         return -1;
     }
 
@@ -423,6 +432,7 @@ int op_expire(HashMap **map, command_t *comm) {
     }
 
     value->expire_at = time(NULL) + seconds;
+    printf("(integer): 1\n");
     return 0;
 }
 

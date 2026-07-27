@@ -38,6 +38,7 @@ Example:
 
 ```
 > set name john
+OK
 ```
 
 ---
@@ -67,6 +68,7 @@ Example:
 
 ```
 > del name
+(integer): 1
 ```
 
 ---
@@ -81,7 +83,7 @@ Example:
 
 ```
 > exists name
-exists_status: 1
+(integer): 1
 ```
 
 ---
@@ -98,6 +100,7 @@ Example:
 
 ```
 > rpush users john alex
+(integer): 2
 ```
 
 ---
@@ -114,7 +117,6 @@ Example:
 
 ```
 > lrange users 0 -1
-
 1) "john"
 2) "alex"
 ```
@@ -146,6 +148,7 @@ Example:
 
 ```
 > lset users 0 mike
+(integer): 1
 ```
 
 ---
@@ -177,6 +180,7 @@ Example:
 
 ```
 > expire session 60
+(integer): 1
 ```
 
 The key will be deleted after 60 seconds.
@@ -193,7 +197,7 @@ Example:
 
 ```
 > ttl session
-45
+(integer): 45
 ```
 
 ---
@@ -210,6 +214,7 @@ Example:
 
 ```
 > flushall
+OK
 ```
 
 ---

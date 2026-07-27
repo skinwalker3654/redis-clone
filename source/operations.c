@@ -275,6 +275,17 @@ int op_rpop(HashMap **map, command_t *comm) {
         return -1;
     }
 
+    switch(value->list->items[value->list->counter-1]->type) {
+        case VAL_INTEGER:
+            printf("\"%d\"\n",value->list->items[value->list->counter-1]->integer_value);
+            break;
+        case VAL_STRING:
+            printf("\"%s\"\n",value->list->items[value->list->counter-1]->string_value);
+            break;
+        default:
+            break;
+    }
+
     value_destroy(value->list->items[value->list->counter-1]);
     value->list->counter--;
 

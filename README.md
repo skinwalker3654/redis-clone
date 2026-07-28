@@ -52,7 +52,7 @@ redis/
 
 ```bash
 make
-# then open the file called PUT_NAME_HERE and put the database name inside before you run the program
+# then open the file called PUT_NAME_HERE and put the database name inside it before you run the program
 ```
 
 --- 

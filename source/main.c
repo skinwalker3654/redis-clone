@@ -3,9 +3,22 @@
 #include "../header/commands.h"
 #include "../header/color.h"
 
+#define BUFF_SIZE 256
 static int source_pos = 0;
 
 int main(void) {
+    FILE *file = fopen("PUT_NAME_HERE","r");
+    if(!file) {
+        printf(COLOR_RED"(error) ERR failed to open file with database name\n"COLOR_RESET);
+        return 1;
+    }
+
+    /* reading name */
+    char name[BUFF_SIZE];
+    fread(name,BUFF_SIZE,1,file);
+    name[strcspn(name,"\n")] = '\0';
+    fclose(file);
+
     HashMap *map = map_init();
     if(!map) return 1;
 
@@ -25,7 +38,7 @@ int main(void) {
             return 1;
         }
 
-        printf(COLOR_YELLOW ">> " COLOR_RESET);
+        printf(COLOR_YELLOW "[%s]> " COLOR_RESET,name);
         if(getline(&buffer,&size,stdin)==-1) {
             printf(COLOR_RED "(error) ERR input failure\n" COLOR_RESET);
             parser_command_destroy(command);
@@ -36,7 +49,7 @@ int main(void) {
         if(strlen(buffer)==0){ source_pos = 0; continue; }
 
         if(strcmp(buffer,"exit")==0) {
-            printf(COLOR_YELLOW "Exiting ...\n" COLOR_RESET);
+            printf(COLOR_CYAN "Exiting ...\n" COLOR_RESET);
             map_destroy(map);
             parser_command_destroy(command);
             free(buffer);

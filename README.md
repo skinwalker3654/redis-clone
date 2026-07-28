@@ -44,6 +44,7 @@ redis/
 │   ├── operations.h
 │   └── parser.h
 │
+├── PUT_NAME_HERE
 └── README.md
 ```
 
@@ -51,6 +52,7 @@ redis/
 
 ```bash
 make
+# then open the file called PUT_NAME_HERE and put the database name inside before you run the program
 ```
 
 --- 

@@ -1,4 +1,5 @@
 #include "../header/commands.h"
+#include "../header/color.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -33,7 +34,8 @@ command_func find_command(char *name) {
 int execute(HashMap **map, command_t *comm) {
     command_func func = find_command(comm->argv[0]);
     if(!func) {
-        printf("error uknown command '%s'\n",comm->argv[0]);
+        printf(COLOR_RED "\n(error) ERR unknown command '%s'\n" COLOR_RESET, comm->argv[0]);
+        printf(COLOR_YELLOW "(error) ERR type 'help' for available commands\n\n" COLOR_RESET);
         return -1;
     }
 

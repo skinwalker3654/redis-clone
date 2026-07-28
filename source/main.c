@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "../header/commands.h"
+#include "../header/color.h"
 
 static int source_pos = 0;
 
@@ -11,6 +12,12 @@ int main(void) {
     char *buffer = NULL;
     size_t size = 0;
 
+    // Welcome message
+    printf(COLOR_CYAN COLOR_BOLD "\n╔══════════════════════════════════════════════════════════════╗\n" COLOR_RESET);
+    printf(COLOR_CYAN COLOR_BOLD "║" COLOR_RESET COLOR_BOLD COLOR_WHITE "           Welcome to Redis-like Database!                    " COLOR_RESET COLOR_BOLD COLOR_CYAN "║\n" COLOR_RESET);
+    printf(COLOR_CYAN COLOR_BOLD "╚══════════════════════════════════════════════════════════════╝\n" COLOR_RESET);
+    printf(COLOR_DIM "  Type 'help' for available commands or 'exit' to quit\n\n" COLOR_RESET);
+
     while(1) {
         command_t *command = parser_command_init();
         if(!command) {
@@ -18,9 +25,9 @@ int main(void) {
             return 1;
         }
 
-        printf(">> ");
+        printf(COLOR_YELLOW ">> " COLOR_RESET);
         if(getline(&buffer,&size,stdin)==-1) {
-            printf("Input failure\n");
+            printf(COLOR_RED "(error) ERR input failure\n" COLOR_RESET);
             parser_command_destroy(command);
             continue;
         }
@@ -29,7 +36,7 @@ int main(void) {
         if(strlen(buffer)==0){ source_pos = 0; continue; }
 
         if(strcmp(buffer,"exit")==0) {
-            printf("Exiting ...\n");
+            printf(COLOR_YELLOW "Exiting ...\n" COLOR_RESET);
             map_destroy(map);
             parser_command_destroy(command);
             free(buffer);

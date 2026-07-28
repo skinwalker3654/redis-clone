@@ -1,4 +1,5 @@
 #include "../header/parser.h"
+#include "../header/color.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -7,13 +8,13 @@
 command_t *parser_command_init() {
     command_t *new_comm = malloc(sizeof(command_t));
     if(!new_comm) {
-        printf("error from parser_command_init: Failed to allocate memory for the command\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the command\n" COLOR_RESET);
         return NULL;
     }
 
     new_comm->argv = malloc(sizeof(char*)*INIT_CAP);
     if(!new_comm->argv) {
-        printf("error from parser_command_init: Failed to allocate memory for the command's arguments list\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the command's arguments list\n" COLOR_RESET);
         free(new_comm);
         return NULL;
     }
@@ -60,7 +61,7 @@ char *parser_get_next_arg(char *input, int *pos) {
     if(input[*pos] == '\0') {
         char *buffer = malloc(1);
         if(!buffer) {
-            printf("error from parser_get_next_arg: Failed to parse null terminator\n");
+            printf(COLOR_RED "(error) ERR Failed to parse null terminator\n" COLOR_RESET);
             return NULL;
         }
 
@@ -72,11 +73,11 @@ char *parser_get_next_arg(char *input, int *pos) {
         char *buffer = NULL;
 
         (*pos)++;
-        while(input[*pos] != '"' && input[*pos] != '\0') 
+        while(input[*pos] != '"' && input[*pos] != '\0')
             string_push_char(&buffer,input[(*pos)++]);
 
         if(input[*pos] != '"') {
-            printf("error from parser_get_next_arg: String has never been closed with -> \"\n");
+            printf(COLOR_RED "(error) ERR String has never been closed properly\n" COLOR_RESET);
             free(buffer);
             return NULL;
         }
@@ -86,7 +87,7 @@ char *parser_get_next_arg(char *input, int *pos) {
     }
 
     char *buffer = NULL;
-    while(input[*pos] != '\0' && !isspace(input[*pos])) 
+    while(input[*pos] != '\0' && !isspace(input[*pos]))
         string_push_char(&buffer,input[(*pos)++]);
 
     return buffer;
@@ -97,7 +98,7 @@ int parser_command_push(command_t *comm, char *arg) {
         int temp_cap = comm->capacity * 2;
         char **temp = realloc(comm->argv,sizeof(char*)*temp_cap);
         if(!temp) {
-            printf("error from parser_command_push: Failed to allocate memory for more arguments\n");
+            printf(COLOR_RED "(error) ERR Failed to allocate memory for more arguments\n" COLOR_RESET);
             return -1;
         }
 
@@ -107,7 +108,7 @@ int parser_command_push(command_t *comm, char *arg) {
 
     comm->argv[comm->counter] = strdup(arg);
     if(!comm->argv[comm->counter]) {
-        printf("error from parser_command_push: Failed to allocate memory for the argument\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the argument\n" COLOR_RESET);
         return -1;
     }
 

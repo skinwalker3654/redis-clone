@@ -1,4 +1,5 @@
 #include "../header/hashmap.h"
+#include "../header/color.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,13 +8,13 @@
 List *list_init() {
     List *list_new = malloc(sizeof(List));
     if(!list_new) {
-        printf("error from list_init: Failed to allocate memory for the list\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the list\n" COLOR_RESET);
         return NULL;
     }
 
     list_new->items = malloc(sizeof(Value*)*INIT_CAP);
     if(!list_new->items) {
-        printf("error from list_init: Failed to allocate memory for the items in the list\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the items in the list\n" COLOR_RESET);
         free(list_new);
         return NULL;
     }
@@ -37,7 +38,7 @@ void list_destroy(List *list) {
 int list_append(List *list, Value *value) {
     if(!value || !list) return -1;
     if(value->type == VAL_LIST) {
-        printf("error from list_append: Cannot append a list inside an other list\n");
+        printf(COLOR_RED "(error) ERR Cannot append a list inside another list\n" COLOR_RESET);
         return -1;
     }
 
@@ -45,7 +46,7 @@ int list_append(List *list, Value *value) {
         int temp_cap = list->capacity * 2;
         Value **temp = realloc(list->items,sizeof(Value*)*temp_cap);
         if(!temp) {
-            printf("error from list_append: Failed to allocate memory for more values\n");
+            printf(COLOR_RED "(error) ERR Failed to allocate memory for more values\n" COLOR_RESET);
             return -1;
         }
 
@@ -62,14 +63,14 @@ int list_append(List *list, Value *value) {
 Value *value_create_string(char *string) {
     Value *new_value = malloc(sizeof(Value));
     if(!new_value) {
-        printf("error from value_create_string: Failed to allocate memory for the value\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the value\n" COLOR_RESET);
         return NULL;
     }
 
-    new_value->type = VAL_STRING; 
+    new_value->type = VAL_STRING;
     new_value->string_value = strdup(string);
     if(!new_value->string_value) {
-        printf("error from value_create_string: Failed to allocate memory for the string_value\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the string_value\n" COLOR_RESET);
         free(new_value);
         return NULL;
     }
@@ -80,11 +81,11 @@ Value *value_create_string(char *string) {
 Value *value_create_integer(int integer) {
     Value *new_value = malloc(sizeof(Value));
     if(!new_value) {
-        printf("error from value_create_string: Failed to allocate memory for the value\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the value\n" COLOR_RESET);
         return NULL;
     }
 
-    new_value->type = VAL_INTEGER; 
+    new_value->type = VAL_INTEGER;
     new_value->integer_value = integer;
 
     return new_value;
@@ -93,11 +94,11 @@ Value *value_create_integer(int integer) {
 Value *value_create_list(List *list) {
     Value *new_value = malloc(sizeof(Value));
     if(!new_value) {
-        printf("error from value_create_string: Failed to allocate memory for the value\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the value\n" COLOR_RESET);
         return NULL;
     }
 
-    new_value->type = VAL_LIST; 
+    new_value->type = VAL_LIST;
     new_value->list = list;
 
     return new_value;
@@ -125,13 +126,13 @@ void value_destroy(Value *value) {
 HashMap *map_init() {
     HashMap *new_map = malloc(sizeof(HashMap));
     if(!new_map) {
-        printf("Failed to allocate memory for the hash_map\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the hash_map\n" COLOR_RESET);
         return NULL;
     }
 
     new_map->buckets = calloc(HASH_MAP_SIZE,sizeof(Node*));
     if(!new_map->buckets) {
-        printf("Failed to allocate memory for the hash_map's buckets\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the hash_map's buckets\n" COLOR_RESET);
         free(new_map);
         return NULL;
     }
@@ -187,13 +188,13 @@ int map_insert(HashMap *map, char *key, Value *value) {
     /* initializing new node */
     Node *new_node = malloc(sizeof(Node));
     if(!new_node) {
-        printf("error from map_insert: Failed to allocate memory for the new node\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the new node\n" COLOR_RESET);
         return -1;
     }
 
     new_node->key = strdup(key);
     if(!new_node->key) {
-        printf("error from map_insert: Failed to allocate memory for the new key\n");
+        printf(COLOR_RED "(error) ERR Failed to allocate memory for the new key\n" COLOR_RESET);
         free(new_node);
         return -1;
     }
@@ -252,6 +253,6 @@ int map_remove(HashMap *map, char *key) {
         current = current->next;
     }
 
-    printf("(nil)\n");
+    printf(COLOR_DIM "(nil)\n" COLOR_RESET);
     return -1;
 }

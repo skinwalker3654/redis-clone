@@ -279,4 +279,7 @@ make run
 ```bash
 make clean
 ```
-# redis-clone
+---
+
+## Screenshot
+![alt text](https://github.com/skinwalker3654/redis-clone/blob/main/.github/screenshot.png?raw=true)

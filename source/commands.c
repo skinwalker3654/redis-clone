@@ -22,6 +22,7 @@ Command commands_table[] = {
     {"incrby",op_incrby},
     {"decrby",op_decrby},
     {"rename",op_rename},
+    {"setex",op_setex},
     {NULL,NULL},
 };
 

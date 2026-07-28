@@ -23,7 +23,7 @@ int op_set(HashMap **map, command_t *comm) {
     if(!value)
         return -1;
 
-    if(map_insert(*map,comm->argv[1],value)==-1) {
+    if(map_insert(*map,comm->argv[1],value,-1)==-1) {
         value_destroy(value);
         return -1;
     }
@@ -82,19 +82,20 @@ int op_del(HashMap **map, command_t *comm) {
 }
 
 int op_exists(HashMap **map, command_t *comm) {
-    if(comm->counter != 2) {
+    if(comm->counter < 2) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'exists' command\n" COLOR_RESET);
-        printf(COLOR_YELLOW "(error) ERR correct usage: \"exists KEY\"\n\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"exists KEY [KEY...]\"\n\n" COLOR_RESET);
         return -1;
     }
 
-    Value *value = map_get(*map,comm->argv[1]);
-    if(!value) {
-        printf(COLOR_YELLOW "(integer) 0\n" COLOR_RESET);
-        return 0;
+    int counter = 0;
+    for(int i=1; i<comm->counter; i++) {
+        Value *value = map_get(*map,comm->argv[i]);
+        if(!value) continue;
+        counter++;
     }
 
-    printf(COLOR_GREEN "(integer) 1\n" COLOR_RESET);
+    printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET,counter);
     return 0;
 }
 
@@ -153,6 +154,11 @@ int op_lrange(HashMap **map, command_t *comm) {
     int end_pos = strtol(comm->argv[3],&endPtr2,10);
     if(*endPtr2 != '\0') {
         printf(COLOR_RED "(error) ERR invalid end position '%s'\n" COLOR_RESET,comm->argv[3]);
+        return -1;
+    }
+
+    if(value->list->counter == 0) {
+        printf(COLOR_RED"(error) ERR list is empty\n"COLOR_RESET);
         return -1;
     }
 
@@ -229,7 +235,7 @@ int op_rpush(HashMap **map, command_t *comm) {
             return -1;
         }
 
-        if(map_insert(*map,comm->argv[1],value_temp)==-1) {
+        if(map_insert(*map,comm->argv[1],value_temp,-1)==-1) {
             value_destroy(value_temp);
             return -1;
         }
@@ -269,9 +275,9 @@ int op_rpush(HashMap **map, command_t *comm) {
 }
 
 int op_rpop(HashMap **map, command_t *comm) {
-    if(comm->counter != 2) {
+    if(comm->counter > 3) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'rpop' command\n" COLOR_RESET);
-        printf(COLOR_YELLOW "(error) ERR correct usage: \"rpop KEY\"\n\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"rpop KEY [COUNT]\"\n\n" COLOR_RESET);
         return -1;
     }
 
@@ -291,19 +297,57 @@ int op_rpop(HashMap **map, command_t *comm) {
         return -1;
     }
 
-    switch(value->list->items[value->list->counter-1]->type) {
-        case VAL_INTEGER:
-            printf(COLOR_CYAN "(integer) %d\n" COLOR_RESET, value->list->items[value->list->counter-1]->integer_value);
-            break;
-        case VAL_STRING:
-            printf(COLOR_GREEN "\"%s\"\n" COLOR_RESET, value->list->items[value->list->counter-1]->string_value);
-            break;
-        default:
-            break;
-    }
+    if(comm->counter == 2) {
+        switch(value->list->items[value->list->counter-1]->type) {
+            case VAL_INTEGER:
+                printf(COLOR_CYAN "(integer) %d\n" COLOR_RESET, value->list->items[value->list->counter-1]->integer_value);
+                break;
+            case VAL_STRING:
+                printf(COLOR_GREEN "\"%s\"\n" COLOR_RESET, value->list->items[value->list->counter-1]->string_value);
+                break;
+            default:
+                break;
+        }
 
-    value_destroy(value->list->items[value->list->counter-1]);
-    value->list->counter--;
+        value_destroy(value->list->items[value->list->counter-1]);
+        value->list->counter--;
+
+        return 0;
+    } else {
+        char *endPtr;
+        int number = strtol(comm->argv[2],&endPtr,10);
+        if(*endPtr != '\0') {
+            printf(COLOR_RED"(error) ERR Invalid count '%s'\n"COLOR_RESET,comm->argv[2]);
+            return -1;
+        }
+
+        if(number <= 0 || number > value->list->counter) {
+            printf(COLOR_RED "(error) ERR index out of bounds\n" COLOR_RESET);
+            return -1;
+        }
+
+        printf("\n");
+        for(int i=0; i<number; i++) {
+            int index = value->list->counter-1;
+            switch(value->list->items[index]->type) {
+                case VAL_INTEGER:
+                    printf(COLOR_CYAN "%d) \"%d\"\n" COLOR_RESET,i+1,value->list->items[index]->integer_value);
+                    break;
+                case VAL_STRING:
+                    printf(COLOR_GREEN "%d) \"%s\"\n" COLOR_RESET,i+1,value->list->items[index]->string_value);
+                    break;
+                default:
+                    break;
+            }
+
+            value_destroy(value->list->items[index]);
+            value->list->items[index] = NULL;
+            value->list->counter--;
+        }
+
+        printf("\n");
+        return 0;
+    }
 
     return 0;
 }
@@ -569,6 +613,41 @@ int op_rename(HashMap **map, command_t *comm) {
     return 0;
 }
 
+int op_setex(HashMap **map, command_t *comm) {
+    if(comm->counter != 4) {
+        printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'setex' command\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"set KEY SECONDS VALUE\"\n\n" COLOR_RESET);
+        return -1;
+    }
+
+    char *endPtr1;
+    int seconds = strtol(comm->argv[2],&endPtr1,10);
+    if(*endPtr1 != '\0') {
+        printf("(error) ERR Invalid seconds '%s'\n",comm->argv[3]);
+        return -1;
+    }
+
+    int is_number = 0;
+
+    char *endPtr2;
+    int number = strtol(comm->argv[3],&endPtr2,10);
+    if(*endPtr2 == '\0')
+        is_number = 1;
+
+    Value *value = is_number ? value_create_integer(number) : value_create_string(comm->argv[3]);
+    if(!value)
+        return -1;
+
+    if(map_insert(*map,comm->argv[1],value,seconds)==-1) {
+        value_destroy(value);
+        return -1;
+    }
+
+    printf(COLOR_GREEN "OK\n" COLOR_RESET);
+    return 0;
+
+}
+
 int op_help(HashMap **map, command_t *comm) {
     if(comm->counter != 1) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'help' command\n" COLOR_RESET);
@@ -587,7 +666,7 @@ int op_help(HashMap **map, command_t *comm) {
     printf(COLOR_GREEN "    decrby" COLOR_RESET " key decrement        " COLOR_DIM "Decrease key value by decrement\n" COLOR_RESET);
     printf(COLOR_GREEN "    get" COLOR_RESET " key                     " COLOR_DIM "Get value of a key\n" COLOR_RESET);
     printf(COLOR_GREEN "    del" COLOR_RESET " key [key...]            " COLOR_DIM "Delete a key or many keys\n" COLOR_RESET);
-    printf(COLOR_GREEN "    exists" COLOR_RESET " key                  " COLOR_DIM "Check if key exists\n" COLOR_RESET);
+    printf(COLOR_GREEN "    exists" COLOR_RESET " key [key..]          " COLOR_DIM "Check if key or keys exist\n" COLOR_RESET);
     printf(COLOR_GREEN "    flushall" COLOR_RESET "                    " COLOR_DIM "Delete all keys\n" COLOR_RESET);
     printf(COLOR_GREEN "    keys" COLOR_RESET "                        " COLOR_DIM "Get all keys\n" COLOR_RESET);
 
@@ -595,12 +674,13 @@ int op_help(HashMap **map, command_t *comm) {
     printf(COLOR_BOLD COLOR_MAGENTA "  Expiration Commands:\n" COLOR_RESET);
     printf(COLOR_GREEN "    ttl" COLOR_RESET " key                     " COLOR_DIM "Show remaining lifetime\n" COLOR_RESET);
     printf(COLOR_GREEN "    expire" COLOR_RESET " key seconds          " COLOR_DIM "Set key expiration time\n" COLOR_RESET);
+    printf(COLOR_GREEN "    setex" COLOR_RESET " key seconds value     " COLOR_DIM "Create and Set key expiration time\n" COLOR_RESET);
 
     printf("\n");
     printf(COLOR_BOLD COLOR_CYAN "  List Commands:\n" COLOR_RESET);
     printf(COLOR_GREEN "    rpush" COLOR_RESET " key value [value...]  " COLOR_DIM "Append value to list or append values to list\n" COLOR_RESET);
     printf(COLOR_GREEN "    lrange" COLOR_RESET " key start end        " COLOR_DIM "Get values in range (-1 = all)\n" COLOR_RESET);
-    printf(COLOR_GREEN "    rpop" COLOR_RESET " key                    " COLOR_DIM "Remove last value from list\n" COLOR_RESET);
+    printf(COLOR_GREEN "    rpop" COLOR_RESET " key [count]            " COLOR_DIM "Remove last value from list or remove last values\n" COLOR_RESET);
     printf(COLOR_GREEN "    lset" COLOR_RESET " key index value        " COLOR_DIM "Change value at index\n" COLOR_RESET);
     printf(COLOR_GREEN "    lindex" COLOR_RESET " key index            " COLOR_DIM "Get value at index\n" COLOR_RESET);
 

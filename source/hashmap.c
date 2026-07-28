@@ -122,7 +122,6 @@ void value_destroy(Value *value) {
     }
 }
 
-
 HashMap *map_init() {
     HashMap *new_map = malloc(sizeof(HashMap));
     if(!new_map) {
@@ -173,7 +172,7 @@ unsigned int hash(char *key) {
 }
 
 /* methods */
-int map_insert(HashMap *map, char *key, Value *value) {
+int map_insert(HashMap *map, char *key, Value *value, int seconds) {
     int index = hash(key);
     Node *current = map->buckets[index];
 
@@ -202,7 +201,7 @@ int map_insert(HashMap *map, char *key, Value *value) {
     }
 
     new_node->value = value;
-    new_node->value->expire_at = -1;
+    new_node->value->expire_at = seconds == -1 ? -1 : seconds + time(NULL);
 
     /* inserting the new node */
     new_node->next = map->buckets[index];
@@ -261,22 +260,43 @@ int map_remove(HashMap *map, char *key) {
 }
 
 int map_rename(HashMap *map, char *key, char *new_key) {
-    int index = hash(key);
-    Node *current = map->buckets[index];
+    int old_index = hash(key);
+
+    Node *prev = NULL;
+    Node *current = map->buckets[old_index];
 
     while(current != NULL) {
-        if(strcmp(current->key,key)==0) {
-            free(current->key);
-            current->key = strdup(new_key);
-            if(!current->key) {
-                printf(COLOR_RED "(error) ERR Failed to allocate memory for the new key name\n" COLOR_RESET);
-                return -1;
-            }
-
-            return 0;
-        }
+        if(strcmp(current->key,key) == 0) break;
+        prev = current;
+        current = current->next;
     }
 
-    printf(COLOR_RED "(error) ERR no such key\n" COLOR_RESET);
-    return -1;
+    if(current == NULL) {
+        printf(COLOR_RED "(error) ERR no such key\n" COLOR_RESET);
+        return -1;
+    }
+
+    if(map_get(map, new_key) != NULL) {
+        printf(COLOR_RED "(error) ERR destination key already exists\n" COLOR_RESET);
+        return -1;
+    }
+
+    if(prev != NULL)
+        prev->next = current->next;
+    else
+        map->buckets[old_index] = current->next;
+
+    free(current->key);
+
+    current->key = strdup(new_key);
+    if(current->key == NULL) {
+        printf(COLOR_RED "(error) ERR failed to allocate memory\n" COLOR_RESET);
+        return -1;
+    }
+
+    int new_index = hash(new_key);
+    current->next = map->buckets[new_index];
+    map->buckets[new_index] = current;
+
+    return 0;
 }

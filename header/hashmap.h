@@ -56,7 +56,7 @@ int hash_function();
 HashMap *map_init();
 void map_destroy(HashMap *map);
 
-int map_insert(HashMap *map, char *key, Value *value);
+int map_insert(HashMap *map, char *key, Value *value, int seconds);
 int map_remove(HashMap *map, char *key);
 int map_rename(HashMap *map, char *key, char *new_key);
 Value *map_get(HashMap *map, char *key);

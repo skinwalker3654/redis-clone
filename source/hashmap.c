@@ -257,7 +257,6 @@ int map_remove(HashMap *map, char *key) {
         current = current->next;
     }
 
-    printf(COLOR_YELLOW "(integer) 0\n" COLOR_RESET);
     return -1;
 }
 

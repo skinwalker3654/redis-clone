@@ -65,16 +65,19 @@ int op_get(HashMap **map, command_t *comm) {
 }
 
 int op_del(HashMap **map, command_t *comm) {
-    if(comm->counter != 2) {
+    if(comm->counter < 2) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'del' command\n" COLOR_RESET);
-        printf(COLOR_YELLOW "(error) ERR correct usage: \"del KEY\"\n\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"del KEY [KEY...]\"\n\n" COLOR_RESET);
         return -1;
     }
 
-    if(map_remove(*map,comm->argv[1])==-1)
-        return -1;
+    int counter = 0;
+    for(int i=1; i<comm->counter; i++) {
+        if(map_remove(*map,comm->argv[i])==-1) continue;
+        counter++;
+    }
 
-    printf(COLOR_GREEN "(integer) 1\n" COLOR_RESET);
+    printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET,counter);
     return 0;
 }
 
@@ -184,7 +187,7 @@ int op_lrange(HashMap **map, command_t *comm) {
 int op_rpush(HashMap **map, command_t *comm) {
     if(comm->counter < 3) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'rpush' command\n" COLOR_RESET);
-        printf(COLOR_YELLOW "(error) ERR correct usage: \"rpush KEY arg [arg...]\"\n\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"rpush KEY ARG [ARG...]\"\n\n" COLOR_RESET);
         return -1;
     }
 
@@ -583,7 +586,7 @@ int op_help(HashMap **map, command_t *comm) {
     printf(COLOR_GREEN "    incrby" COLOR_RESET " key increment        " COLOR_DIM "Increase key value by increment\n" COLOR_RESET);
     printf(COLOR_GREEN "    decrby" COLOR_RESET " key decrement        " COLOR_DIM "Decrease key value by decrement\n" COLOR_RESET);
     printf(COLOR_GREEN "    get" COLOR_RESET " key                     " COLOR_DIM "Get value of a key\n" COLOR_RESET);
-    printf(COLOR_GREEN "    del" COLOR_RESET " key                     " COLOR_DIM "Delete a key\n" COLOR_RESET);
+    printf(COLOR_GREEN "    del" COLOR_RESET " key [key...]            " COLOR_DIM "Delete a key or many keys\n" COLOR_RESET);
     printf(COLOR_GREEN "    exists" COLOR_RESET " key                  " COLOR_DIM "Check if key exists\n" COLOR_RESET);
     printf(COLOR_GREEN "    flushall" COLOR_RESET "                    " COLOR_DIM "Delete all keys\n" COLOR_RESET);
     printf(COLOR_GREEN "    keys" COLOR_RESET "                        " COLOR_DIM "Get all keys\n" COLOR_RESET);
@@ -595,7 +598,7 @@ int op_help(HashMap **map, command_t *comm) {
 
     printf("\n");
     printf(COLOR_BOLD COLOR_CYAN "  List Commands:\n" COLOR_RESET);
-    printf(COLOR_GREEN "    rpush" COLOR_RESET " key value [value...]  " COLOR_DIM "Append value to list\n" COLOR_RESET);
+    printf(COLOR_GREEN "    rpush" COLOR_RESET " key value [value...]  " COLOR_DIM "Append value to list or append values to list\n" COLOR_RESET);
     printf(COLOR_GREEN "    lrange" COLOR_RESET " key start end        " COLOR_DIM "Get values in range (-1 = all)\n" COLOR_RESET);
     printf(COLOR_GREEN "    rpop" COLOR_RESET " key                    " COLOR_DIM "Remove last value from list\n" COLOR_RESET);
     printf(COLOR_GREEN "    lset" COLOR_RESET " key index value        " COLOR_DIM "Change value at index\n" COLOR_RESET);

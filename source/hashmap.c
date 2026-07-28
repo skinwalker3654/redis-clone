@@ -138,6 +138,8 @@ HashMap *map_init() {
     }
 
     new_map->size = HASH_MAP_SIZE;
+    new_map->keys = 0;
+
     return new_map;
 }
 
@@ -205,6 +207,7 @@ int map_insert(HashMap *map, char *key, Value *value) {
     /* inserting the new node */
     new_node->next = map->buckets[index];
     map->buckets[index] = new_node;
+    map->keys++;
 
     return 0;
 }
@@ -246,6 +249,7 @@ int map_remove(HashMap *map, char *key) {
             free(current->key);
             value_destroy(current->value);
             free(current);
+            map->keys--;
             return 0;
         }
 
@@ -253,6 +257,27 @@ int map_remove(HashMap *map, char *key) {
         current = current->next;
     }
 
-    printf(COLOR_DIM "(nil)\n" COLOR_RESET);
+    printf(COLOR_YELLOW "(integer) 0\n" COLOR_RESET);
+    return -1;
+}
+
+int map_rename(HashMap *map, char *key, char *new_key) {
+    int index = hash(key);
+    Node *current = map->buckets[index];
+
+    while(current != NULL) {
+        if(strcmp(current->key,key)==0) {
+            free(current->key);
+            current->key = strdup(new_key);
+            if(!current->key) {
+                printf(COLOR_RED "(error) ERR Failed to allocate memory for the new key name\n" COLOR_RESET);
+                return -1;
+            }
+
+            return 0;
+        }
+    }
+
+    printf(COLOR_RED "(error) ERR no such key\n" COLOR_RESET);
     return -1;
 }

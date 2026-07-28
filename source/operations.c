@@ -130,12 +130,12 @@ int op_lrange(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf(COLOR_DIM "(nil)\n" COLOR_RESET);
+        printf(COLOR_DIM "(empty array)\n" COLOR_RESET);
         return -1;
     }
 
     if(value->type != VAL_LIST) {
-        printf(COLOR_RED "(error) ERR lrange command only works on lists\n" COLOR_RESET);
+        printf(COLOR_RED "(error) ERR lrange command only works with lists\n" COLOR_RESET);
         return -1;
     }
 
@@ -236,7 +236,7 @@ int op_rpush(HashMap **map, command_t *comm) {
     }
 
     if(value->type != VAL_LIST) {
-        printf(COLOR_RED "(error) ERR rpush command only works on lists\n" COLOR_RESET);
+        printf(COLOR_RED "(error) ERR rpush command only works with lists\n" COLOR_RESET);
         return -1;
     }
 
@@ -279,7 +279,7 @@ int op_rpop(HashMap **map, command_t *comm) {
     }
 
     if(value->type != VAL_LIST) {
-        printf(COLOR_RED "(error) ERR rpop command only works on lists\n" COLOR_RESET);
+        printf(COLOR_RED "(error) ERR rpop command only works with lists\n" COLOR_RESET);
         return -1;
     }
 
@@ -314,12 +314,12 @@ int op_lset(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf(COLOR_DIM "(nil)\n" COLOR_RESET);
+        printf(COLOR_RED "(error) ERR no such key\n" COLOR_RESET);
         return -1;
     }
 
     if(value->type != VAL_LIST) {
-        printf(COLOR_RED "(error) ERR lset command only works on lists\n" COLOR_RESET);
+        printf(COLOR_RED "(error) ERR lset command only works with lists\n" COLOR_RESET);
         return -1;
     }
 
@@ -371,7 +371,7 @@ int op_lindex(HashMap **map, command_t *comm) {
     }
 
     if(value->type != VAL_LIST) {
-        printf(COLOR_RED "(error) ERR lindex command only works on lists\n" COLOR_RESET);
+        printf(COLOR_RED "(error) ERR lindex command only works with lists\n" COLOR_RESET);
         return -1;
     }
 
@@ -432,6 +432,7 @@ int op_ttl(HashMap **map, command_t *comm) {
     } else {
         printf(COLOR_GREEN "(integer) %lld\n" COLOR_RESET, ttl);
     }
+
     return 0;
 }
 
@@ -461,6 +462,110 @@ int op_expire(HashMap **map, command_t *comm) {
     return 0;
 }
 
+
+int op_keys(HashMap **map, command_t *comm) {
+    if(comm->counter != 1) {
+        printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'keys' command\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"keys\" (No arguments needed)\n\n" COLOR_RESET);
+        return -1;
+    }
+
+    if((*map)->keys == 0) {
+        printf(COLOR_RED "(error) ERR database is empty\n" COLOR_RESET);
+        return -1;
+    }
+
+    int counter = 1;
+    printf("\n");
+    for(int i=0; i<(*map)->size; i++) {
+        Node *current = (*map)->buckets[i];
+        while(current != NULL) {
+            printf(COLOR_YELLOW "%d) " COLOR_RESET COLOR_GREEN "\"%s\"\n" COLOR_RESET,counter,current->key);
+            counter++;
+            current = current->next;
+        }
+    }
+
+    printf("\n");
+    return 0;
+}
+
+int op_incrby(HashMap **map, command_t *comm) {
+    if(comm->counter != 3) {
+        printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'incrby' command\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"incrby KEY INCREMENT\"\n\n" COLOR_RESET);
+        return -1;
+    }
+
+    Value *value = map_get(*map,comm->argv[1]);
+    if(!value) {
+        printf(COLOR_DIM "(nil)\n" COLOR_RESET);
+        return -1;
+    }
+
+    if(value->type != VAL_INTEGER) {
+        printf(COLOR_RED "(error) ERR incrby command only works with integers\n" COLOR_RESET);
+        return -1;
+    }
+
+    char *endPtr;
+    int increment = strtol(comm->argv[2],&endPtr,10);
+    if(*endPtr != '\0') {
+        printf("(error) ERR invalid increment '%s'\n",comm->argv[2]);
+        return -1;
+    }
+
+    value->integer_value += increment;
+    printf(COLOR_CYAN "(integer) %d\n" COLOR_RESET,value->integer_value);
+
+    return 0;
+}
+
+int op_decrby(HashMap **map, command_t *comm) {
+    if(comm->counter != 3) {
+        printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'decrby' command\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"decrby KEY DECREMENT\"\n\n" COLOR_RESET);
+        return -1;
+    }
+
+    Value *value = map_get(*map,comm->argv[1]);
+    if(!value) {
+        printf(COLOR_DIM "(nil)\n" COLOR_RESET);
+        return -1;
+    }
+
+    if(value->type != VAL_INTEGER) {
+        printf(COLOR_RED "(error) ERR decrby command only works with integers\n" COLOR_RESET);
+        return -1;
+    }
+
+    char *endPtr;
+    int increment = strtol(comm->argv[2],&endPtr,10);
+    if(*endPtr != '\0') {
+        printf("(error) ERR invalid decrement '%s'\n",comm->argv[2]);
+        return -1;
+    }
+
+    value->integer_value -= increment;
+    printf(COLOR_CYAN "(integer) %d\n" COLOR_RESET,value->integer_value);
+
+    return 0;
+}
+
+int op_rename(HashMap **map, command_t *comm) {
+    if(comm->counter != 3) {
+        printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'rename' command\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"rename KEY NEW_KEY\"\n\n" COLOR_RESET);
+        return -1;
+    }
+
+    if(map_rename(*map,comm->argv[1],comm->argv[2])==-1) 
+        return -1;
+
+    printf(COLOR_GREEN "OK\n" COLOR_RESET);
+    return 0;
+}
+
 int op_help(HashMap **map, command_t *comm) {
     if(comm->counter != 1) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'help' command\n" COLOR_RESET);
@@ -468,16 +573,20 @@ int op_help(HashMap **map, command_t *comm) {
         return -1;
     }
 
-    printf(COLOR_BOLD COLOR_CYAN "\n╔══════════════════════════════════════════════════════════════╗\n" COLOR_RESET);
-    printf(COLOR_BOLD COLOR_CYAN "║" COLOR_RESET COLOR_BOLD COLOR_WHITE "              Available Commands                              " COLOR_RESET COLOR_BOLD COLOR_CYAN "║\n" COLOR_RESET);
-    printf(COLOR_BOLD COLOR_CYAN "╚══════════════════════════════════════════════════════════════╝\n\n" COLOR_RESET);
+    printf(COLOR_BOLD COLOR_CYAN "\n╔════════════════════════════════════════════════════════════╗\n" COLOR_RESET);
+    printf(COLOR_BOLD COLOR_CYAN "║" COLOR_RESET COLOR_BOLD COLOR_WHITE "                     Available Commands                     " COLOR_RESET COLOR_BOLD COLOR_CYAN "║\n" COLOR_RESET);
+    printf(COLOR_BOLD COLOR_CYAN "╚════════════════════════════════════════════════════════════╝\n\n" COLOR_RESET);
 
     printf(COLOR_BOLD COLOR_YELLOW "  Value Commands:\n" COLOR_RESET);
     printf(COLOR_GREEN "    set" COLOR_RESET " key value               " COLOR_DIM "Create or update a key\n" COLOR_RESET);
+    printf(COLOR_GREEN "    rename" COLOR_RESET " key new_key          " COLOR_DIM "Change key name\n" COLOR_RESET);
+    printf(COLOR_GREEN "    incrby" COLOR_RESET " key increment        " COLOR_DIM "Increase key value by increment\n" COLOR_RESET);
+    printf(COLOR_GREEN "    decrby" COLOR_RESET " key decrement        " COLOR_DIM "Decrease key value by decrement\n" COLOR_RESET);
     printf(COLOR_GREEN "    get" COLOR_RESET " key                     " COLOR_DIM "Get value of a key\n" COLOR_RESET);
     printf(COLOR_GREEN "    del" COLOR_RESET " key                     " COLOR_DIM "Delete a key\n" COLOR_RESET);
     printf(COLOR_GREEN "    exists" COLOR_RESET " key                  " COLOR_DIM "Check if key exists\n" COLOR_RESET);
     printf(COLOR_GREEN "    flushall" COLOR_RESET "                    " COLOR_DIM "Delete all keys\n" COLOR_RESET);
+    printf(COLOR_GREEN "    keys" COLOR_RESET "                        " COLOR_DIM "Get all keys\n" COLOR_RESET);
 
     printf("\n");
     printf(COLOR_BOLD COLOR_MAGENTA "  Expiration Commands:\n" COLOR_RESET);

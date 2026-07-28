@@ -13,9 +13,9 @@ int main(void) {
     size_t size = 0;
 
     // Welcome message
-    printf(COLOR_CYAN COLOR_BOLD "\n╔══════════════════════════════════════════════════════════════╗\n" COLOR_RESET);
-    printf(COLOR_CYAN COLOR_BOLD "║" COLOR_RESET COLOR_BOLD COLOR_WHITE "           Welcome to Redis-like Database!                    " COLOR_RESET COLOR_BOLD COLOR_CYAN "║\n" COLOR_RESET);
-    printf(COLOR_CYAN COLOR_BOLD "╚══════════════════════════════════════════════════════════════╝\n" COLOR_RESET);
+    printf(COLOR_CYAN COLOR_BOLD "\n╔═══════════════════════════════════════════════════════╗\n" COLOR_RESET);
+    printf(COLOR_CYAN COLOR_BOLD "║" COLOR_RESET COLOR_BOLD COLOR_WHITE "            Welcome to Redis-like Database!            " COLOR_RESET COLOR_BOLD COLOR_CYAN "║\n" COLOR_RESET);
+    printf(COLOR_CYAN COLOR_BOLD "╚═══════════════════════════════════════════════════════╝\n" COLOR_RESET);
     printf(COLOR_DIM "  Type 'help' for available commands or 'exit' to quit\n\n" COLOR_RESET);
 
     while(1) {

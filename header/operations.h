@@ -17,6 +17,10 @@ int op_rpush(HashMap **map, command_t *comm);
 int op_rpop(HashMap **map, command_t *comm);
 int op_lset(HashMap **map, command_t *comm);
 int op_lindex(HashMap **map, command_t *comm);
+int op_keys(HashMap **map, command_t *comm);
+int op_incrby(HashMap **map, command_t *comm);
+int op_decrby(HashMap **map, command_t *comm);
+int op_rename(HashMap **map, command_t *comm);
 int op_help(HashMap **map, command_t *comm);
 
 #endif

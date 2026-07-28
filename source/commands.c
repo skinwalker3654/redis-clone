@@ -18,6 +18,10 @@ Command commands_table[] = {
     {"lset",op_lset},
     {"lindex",op_lindex},
     {"help",op_help},
+    {"keys",op_keys},
+    {"incrby",op_incrby},
+    {"decrby",op_decrby},
+    {"rename",op_rename},
     {NULL,NULL},
 };
 

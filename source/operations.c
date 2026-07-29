@@ -240,7 +240,7 @@ int op_rpush(HashMap **map, command_t *comm) {
             return -1;
         }
 
-        printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET, comm->counter-2);
+        printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET, value_temp->list->counter);
         return 0;
     }
 
@@ -270,7 +270,7 @@ int op_rpush(HashMap **map, command_t *comm) {
         }
     }
 
-    printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET, comm->counter-2);
+    printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET, value->list->counter);
     return 0;
 }
 

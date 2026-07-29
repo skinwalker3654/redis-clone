@@ -24,6 +24,7 @@ Command commands_table[] = {
     {"rename",op_rename},
     {"setex",op_setex},
     {"pexpireat",op_pexpireat},
+    {"type",op_type},
     {NULL,NULL},
 };
 

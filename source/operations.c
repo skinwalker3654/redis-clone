@@ -560,7 +560,7 @@ int op_ttl(HashMap **map, command_t *comm, execute_type type) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf(COLOR_DIM "(nil)\n" COLOR_RESET);
+        printf(COLOR_DIM "(integer) -2\n" COLOR_RESET);
         return -1;
     }
 
@@ -843,6 +843,34 @@ int op_pexpireat(HashMap **map, command_t *comm, execute_type type) {
     return 0;
 }
 
+int op_type(HashMap **map, command_t *comm, execute_type type) {
+    if(comm->counter != 2) {
+        printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'type' command\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"type KEY\"\n\n" COLOR_RESET);
+        return -1;
+    }
+
+    Value *value = map_get(*map,comm->argv[1]);
+    if(!value) {
+        printf(COLOR_DIM"none\n"COLOR_RESET);
+        return -1;
+    }
+    
+    switch(value->type) {
+        case VAL_STRING:
+            printf(COLOR_GREEN"string\n"COLOR_RESET);
+            break;
+        case VAL_INTEGER:
+            printf(COLOR_CYAN"integer\n"COLOR_RESET);
+            break;
+        case VAL_LIST:
+            printf(COLOR_WHITE"list\n"COLOR_RESET);
+            break;
+    }
+
+    return 0;
+}
+
 int op_help(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 1) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'help' command\n" COLOR_RESET);
@@ -860,6 +888,7 @@ int op_help(HashMap **map, command_t *comm, execute_type type) {
     printf(COLOR_GREEN "    incrby" COLOR_RESET " key increment        " COLOR_DIM "Increase key value by increment\n" COLOR_RESET);
     printf(COLOR_GREEN "    decrby" COLOR_RESET " key decrement        " COLOR_DIM "Decrease key value by decrement\n" COLOR_RESET);
     printf(COLOR_GREEN "    get" COLOR_RESET " key                     " COLOR_DIM "Get value of a key\n" COLOR_RESET);
+    printf(COLOR_GREEN "    type" COLOR_RESET " key                    " COLOR_DIM "Get type of a key\n" COLOR_RESET);
     printf(COLOR_GREEN "    del" COLOR_RESET " key [key...]            " COLOR_DIM "Delete a key or many keys\n" COLOR_RESET);
     printf(COLOR_GREEN "    exists" COLOR_RESET " key [key..]          " COLOR_DIM "Check if key or keys exist\n" COLOR_RESET);
     printf(COLOR_GREEN "    flushall" COLOR_RESET "                    " COLOR_DIM "Delete all keys\n" COLOR_RESET);

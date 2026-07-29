@@ -28,6 +28,7 @@ int op_decrby(HashMap **map, command_t *comm, execute_type type);
 int op_rename(HashMap **map, command_t *comm, execute_type type);
 int op_setex(HashMap **map, command_t *comm, execute_type type);
 int op_pexpireat(HashMap **map, command_t *comm, execute_type type);
+int op_type(HashMap **map, command_t *comm, execute_type type);
 int op_help(HashMap **map, command_t *comm, execute_type type);
 
 #endif

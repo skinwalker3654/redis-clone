@@ -5,7 +5,7 @@
 #include <string.h>
 #include <time.h>
 
-int op_set(HashMap **map, command_t *comm) {
+int op_set(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 3) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'set' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"set KEY VALUE\"\n\n" COLOR_RESET);
@@ -28,11 +28,21 @@ int op_set(HashMap **map, command_t *comm) {
         return -1;
     }
 
-    printf(COLOR_GREEN "OK\n" COLOR_RESET);
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_GREEN "OK\n" COLOR_RESET);
+
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"set %s %s\n",comm->argv[1],comm->argv[2]);
+        fclose(file);
+    }
+
     return 0;
 }
 
-int op_get(HashMap **map, command_t *comm) {
+int op_get(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 2) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'get' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"get KEY\"\n\n" COLOR_RESET);
@@ -64,7 +74,7 @@ int op_get(HashMap **map, command_t *comm) {
     return 0;
 }
 
-int op_del(HashMap **map, command_t *comm) {
+int op_del(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter < 2) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'del' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"del KEY [KEY...]\"\n\n" COLOR_RESET);
@@ -77,11 +87,26 @@ int op_del(HashMap **map, command_t *comm) {
         counter++;
     }
 
-    printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET,counter);
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET,counter);
+
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"del ");
+        for(int i=1; i<comm->counter; i++) {
+            fprintf(file,"%s ",comm->argv[i]);
+        }
+
+        fprintf(file,"\n");
+        fclose(file);
+    }
+
     return 0;
 }
 
-int op_exists(HashMap **map, command_t *comm) {
+int op_exists(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter < 2) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'exists' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"exists KEY [KEY...]\"\n\n" COLOR_RESET);
@@ -99,7 +124,7 @@ int op_exists(HashMap **map, command_t *comm) {
     return 0;
 }
 
-int op_flushall(HashMap **map, command_t *comm) {
+int op_flushall(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 1) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'flushall' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"flushall\" (No arguments needed)\n\n" COLOR_RESET);
@@ -110,11 +135,21 @@ int op_flushall(HashMap **map, command_t *comm) {
     *map = map_init();
     if(!map) return -1;
 
-    printf(COLOR_GREEN "OK\n" COLOR_RESET);
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_GREEN "OK\n" COLOR_RESET);
+
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"flushall\n");
+        fclose(file);
+    }
+
     return 0;
 }
 
-int op_clear(HashMap **map, command_t *comm) {
+int op_clear(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 1) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'clear' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"clear\" (No arguments needed)\n\n" COLOR_RESET);
@@ -125,7 +160,7 @@ int op_clear(HashMap **map, command_t *comm) {
     return 0;
 }
 
-int op_lrange(HashMap **map, command_t *comm) {
+int op_lrange(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 4) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'lrange' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"lrange KEY START_POS {END_POS | -1}\"\n\n" COLOR_RESET);
@@ -190,7 +225,7 @@ int op_lrange(HashMap **map, command_t *comm) {
     return 0;
 }
 
-int op_rpush(HashMap **map, command_t *comm) {
+int op_rpush(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter < 3) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'rpush' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"rpush KEY ARG [ARG...]\"\n\n" COLOR_RESET);
@@ -240,7 +275,21 @@ int op_rpush(HashMap **map, command_t *comm) {
             return -1;
         }
 
-        printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET, value_temp->list->counter);
+        if(type == EXECUTE_FROM_MAIN)
+            printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET, value_temp->list->counter);
+
+        if(type == EXECUTE_FROM_MAIN) {
+            FILE *file = fopen("AOF","a");
+            if(!file) return 0;
+
+            fprintf(file,"rpush %s ",comm->argv[1]);
+            for(int i=2; i<comm->counter; i++) 
+                fprintf(file,"%s ",comm->argv[i]);
+
+            fprintf(file,"\n");
+            fclose(file);
+        }
+
         return 0;
     }
 
@@ -270,11 +319,25 @@ int op_rpush(HashMap **map, command_t *comm) {
         }
     }
 
-    printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET, value->list->counter);
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_GREEN "(integer) %d\n" COLOR_RESET, value->list->counter);
+
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"rpush %s ",comm->argv[1]);
+        for(int i=2; i<comm->counter; i++) 
+            fprintf(file,"%s ",comm->argv[i]);
+
+        fprintf(file,"\n");
+        fclose(file);
+    }
+
     return 0;
 }
 
-int op_rpop(HashMap **map, command_t *comm) {
+int op_rpop(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter > 3) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'rpop' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"rpop KEY [COUNT]\"\n\n" COLOR_RESET);
@@ -283,7 +346,8 @@ int op_rpop(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf(COLOR_DIM "(nil)\n" COLOR_RESET);
+        if(type == EXECUTE_FROM_MAIN)
+            printf(COLOR_DIM "(nil)\n" COLOR_RESET);
         return -1;
     }
 
@@ -300,10 +364,12 @@ int op_rpop(HashMap **map, command_t *comm) {
     if(comm->counter == 2) {
         switch(value->list->items[value->list->counter-1]->type) {
             case VAL_INTEGER:
-                printf(COLOR_CYAN "(integer) %d\n" COLOR_RESET, value->list->items[value->list->counter-1]->integer_value);
+                if(type == EXECUTE_FROM_MAIN)
+                    printf(COLOR_CYAN "(integer) %d\n" COLOR_RESET, value->list->items[value->list->counter-1]->integer_value);
                 break;
             case VAL_STRING:
-                printf(COLOR_GREEN "\"%s\"\n" COLOR_RESET, value->list->items[value->list->counter-1]->string_value);
+                if(type == EXECUTE_FROM_MAIN)
+                    printf(COLOR_GREEN "\"%s\"\n" COLOR_RESET, value->list->items[value->list->counter-1]->string_value);
                 break;
             default:
                 break;
@@ -311,6 +377,14 @@ int op_rpop(HashMap **map, command_t *comm) {
 
         value_destroy(value->list->items[value->list->counter-1]);
         value->list->counter--;
+
+        if(type == EXECUTE_FROM_MAIN) {
+            FILE *file = fopen("AOF","a");
+            if(!file) return 0;
+
+            fprintf(file,"rpop %s\n",comm->argv[1]);
+            fclose(file);
+        }
 
         return 0;
     } else {
@@ -331,10 +405,12 @@ int op_rpop(HashMap **map, command_t *comm) {
             int index = value->list->counter-1;
             switch(value->list->items[index]->type) {
                 case VAL_INTEGER:
-                    printf(COLOR_CYAN "%d) \"%d\"\n" COLOR_RESET,i+1,value->list->items[index]->integer_value);
+                    if(type == EXECUTE_FROM_MAIN)
+                        printf(COLOR_CYAN "%d) \"%d\"\n" COLOR_RESET,i+1,value->list->items[index]->integer_value);
                     break;
                 case VAL_STRING:
-                    printf(COLOR_GREEN "%d) \"%s\"\n" COLOR_RESET,i+1,value->list->items[index]->string_value);
+                    if(type == EXECUTE_FROM_MAIN)
+                        printf(COLOR_GREEN "%d) \"%s\"\n" COLOR_RESET,i+1,value->list->items[index]->string_value);
                     break;
                 default:
                     break;
@@ -346,13 +422,22 @@ int op_rpop(HashMap **map, command_t *comm) {
         }
 
         printf("\n");
+
+        if(type == EXECUTE_FROM_MAIN) {
+            FILE *file = fopen("AOF","a");
+            if(!file) return 0;
+
+            fprintf(file,"rpop %s %s\n",comm->argv[1],comm->argv[2]);
+            fclose(file);
+        }
+
         return 0;
     }
 
     return 0;
 }
 
-int op_lset(HashMap **map, command_t *comm) {
+int op_lset(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 4) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'lset' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"lset KEY INDEX VALUE\"\n\n" COLOR_RESET);
@@ -361,7 +446,8 @@ int op_lset(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf(COLOR_RED "(error) ERR no such key\n" COLOR_RESET);
+        if(type == EXECUTE_FROM_MAIN)
+            printf(COLOR_RED "(error) ERR no such key\n" COLOR_RESET);
         return -1;
     }
 
@@ -400,11 +486,21 @@ int op_lset(HashMap **map, command_t *comm) {
     value_destroy(value->list->items[index]);
     value->list->items[index] = value_temp;
 
-    printf(COLOR_GREEN "OK\n" COLOR_RESET);
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_GREEN "OK\n" COLOR_RESET);
+
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"lset %s %s %s\n",comm->argv[1],comm->argv[2],comm->argv[3]);
+        fclose(file);
+    }
+
     return 0;
 }
 
-int op_lindex(HashMap **map, command_t *comm) {
+int op_lindex(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 3) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'lindex' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"lindex KEY INDEX\"\n\n" COLOR_RESET);
@@ -449,7 +545,7 @@ int op_lindex(HashMap **map, command_t *comm) {
     return 0;
 }
 
-int op_ttl(HashMap **map, command_t *comm) {
+int op_ttl(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 2) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'ttl' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"ttl KEY\"\n\n" COLOR_RESET);
@@ -483,7 +579,7 @@ int op_ttl(HashMap **map, command_t *comm) {
     return 0;
 }
 
-int op_expire(HashMap **map, command_t *comm) {
+int op_expire(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 3) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'expire' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"expire KEY SECONDS\"\n\n" COLOR_RESET);
@@ -492,7 +588,8 @@ int op_expire(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf(COLOR_DIM "(nil)\n" COLOR_RESET);
+        if(type == EXECUTE_FROM_MAIN)
+            printf(COLOR_GREEN "(integer) 0\n" COLOR_RESET);
         return -1;
     }
 
@@ -504,13 +601,22 @@ int op_expire(HashMap **map, command_t *comm) {
     }
 
     value->expire_at = time(NULL) + seconds;
-    printf(COLOR_GREEN "(integer) 1\n" COLOR_RESET);
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_GREEN "(integer) 1\n" COLOR_RESET);
+
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"pexpireat %s %lld\n",comm->argv[1],value->expire_at);
+        fclose(file);
+    }
 
     return 0;
 }
 
 
-int op_keys(HashMap **map, command_t *comm) {
+int op_keys(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 1) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'keys' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"keys\" (No arguments needed)\n\n" COLOR_RESET);
@@ -527,6 +633,11 @@ int op_keys(HashMap **map, command_t *comm) {
     for(int i=0; i<(*map)->size; i++) {
         Node *current = (*map)->buckets[i];
         while(current != NULL) {
+            if(time(NULL) >= current->value->expire_at && current->value->expire_at != -1) {
+                (*map)->keys--;
+                current = current->next;
+                continue;
+            }
             printf(COLOR_YELLOW "%d) " COLOR_RESET COLOR_GREEN "\"%s\"\n" COLOR_RESET,counter,current->key);
             counter++;
             current = current->next;
@@ -537,7 +648,7 @@ int op_keys(HashMap **map, command_t *comm) {
     return 0;
 }
 
-int op_incrby(HashMap **map, command_t *comm) {
+int op_incrby(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 3) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'incrby' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"incrby KEY INCREMENT\"\n\n" COLOR_RESET);
@@ -546,7 +657,8 @@ int op_incrby(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf(COLOR_DIM "(nil)\n" COLOR_RESET);
+        if(type == EXECUTE_FROM_MAIN)
+            printf(COLOR_DIM "(nil)\n" COLOR_RESET);
         return -1;
     }
 
@@ -563,12 +675,21 @@ int op_incrby(HashMap **map, command_t *comm) {
     }
 
     value->integer_value += increment;
-    printf(COLOR_CYAN "(integer) %d\n" COLOR_RESET,value->integer_value);
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_CYAN "(integer) %d\n" COLOR_RESET,value->integer_value);
+
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"incrby %s %s\n",comm->argv[1],comm->argv[2]);
+        fclose(file);
+    }
 
     return 0;
 }
 
-int op_decrby(HashMap **map, command_t *comm) {
+int op_decrby(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 3) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'decrby' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"decrby KEY DECREMENT\"\n\n" COLOR_RESET);
@@ -577,7 +698,8 @@ int op_decrby(HashMap **map, command_t *comm) {
 
     Value *value = map_get(*map,comm->argv[1]);
     if(!value) {
-        printf(COLOR_DIM "(nil)\n" COLOR_RESET);
+        if(type == EXECUTE_FROM_MAIN)
+            printf(COLOR_DIM "(nil)\n" COLOR_RESET);
         return -1;
     }
 
@@ -594,12 +716,21 @@ int op_decrby(HashMap **map, command_t *comm) {
     }
 
     value->integer_value -= increment;
-    printf(COLOR_CYAN "(integer) %d\n" COLOR_RESET,value->integer_value);
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_CYAN "(integer) %d\n" COLOR_RESET,value->integer_value);
+
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"decrby %s %s\n",comm->argv[1],comm->argv[2]);
+        fclose(file);
+    }
 
     return 0;
 }
 
-int op_rename(HashMap **map, command_t *comm) {
+int op_rename(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 3) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'rename' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"rename KEY NEW_KEY\"\n\n" COLOR_RESET);
@@ -609,11 +740,21 @@ int op_rename(HashMap **map, command_t *comm) {
     if(map_rename(*map,comm->argv[1],comm->argv[2])==-1) 
         return -1;
 
-    printf(COLOR_GREEN "OK\n" COLOR_RESET);
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_GREEN "OK\n" COLOR_RESET);
+
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"rename %s %s\n",comm->argv[1],comm->argv[2]);
+        fclose(file);
+    }
+
     return 0;
 }
 
-int op_setex(HashMap **map, command_t *comm) {
+int op_setex(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 4) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'setex' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"set KEY SECONDS VALUE\"\n\n" COLOR_RESET);
@@ -621,7 +762,7 @@ int op_setex(HashMap **map, command_t *comm) {
     }
 
     char *endPtr1;
-    int seconds = strtol(comm->argv[2],&endPtr1,10);
+    long long seconds = strtol(comm->argv[2],&endPtr1,10);
     if(*endPtr1 != '\0') {
         printf("(error) ERR Invalid seconds '%s'\n",comm->argv[3]);
         return -1;
@@ -643,12 +784,60 @@ int op_setex(HashMap **map, command_t *comm) {
         return -1;
     }
 
-    printf(COLOR_GREEN "OK\n" COLOR_RESET);
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_GREEN "OK\n" COLOR_RESET);
+
+    int index = hash_function(comm->argv[1]);
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"set %s %s\n",comm->argv[1],comm->argv[3]);
+        fprintf(file,"pexpireat %s %lld\n",comm->argv[1],(*map)->buckets[index]->value->expire_at);
+        fclose(file);
+    }
+
     return 0;
 
 }
 
-int op_help(HashMap **map, command_t *comm) {
+int op_pexpireat(HashMap **map, command_t *comm, execute_type type) {
+    if(comm->counter != 3) {
+        printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'pexpireat' command\n" COLOR_RESET);
+        printf(COLOR_YELLOW "(error) ERR correct usage: \"pexpireat KEY UNIX_TIME\"\n\n" COLOR_RESET);
+        return -1;
+    }
+
+    Value *value = map_get(*map,comm->argv[1]);
+    if(!value) {
+        if(type == EXECUTE_FROM_MAIN)
+            printf(COLOR_GREEN "(integer) 0\n" COLOR_RESET);
+        return -1;
+    }
+
+    char *endPtr;
+    long long expire_time = strtol(comm->argv[2],&endPtr,10);
+    if(*endPtr != '\0') {
+        printf(COLOR_RED "(error) ERR invalid unix_time '%s'\n" COLOR_RESET,comm->argv[2]);
+        return -1;
+    }
+    
+    value->expire_at = expire_time;
+    if(type == EXECUTE_FROM_MAIN)
+        printf(COLOR_GREEN "(integer) 1\n" COLOR_RESET);
+
+    if(type == EXECUTE_FROM_MAIN) {
+        FILE *file = fopen("AOF","a");
+        if(!file) return 0;
+
+        fprintf(file,"pexpireat %s %s\n",comm->argv[1],comm->argv[2]);
+        fclose(file);
+    }
+
+    return 0;
+}
+
+int op_help(HashMap **map, command_t *comm, execute_type type) {
     if(comm->counter != 1) {
         printf(COLOR_RED "\n(error) ERR wrong number of arguments for 'help' command\n" COLOR_RESET);
         printf(COLOR_YELLOW "(error) ERR correct usage: \"help\" (No arguments needed)\n\n" COLOR_RESET);
@@ -673,7 +862,8 @@ int op_help(HashMap **map, command_t *comm) {
     printf("\n");
     printf(COLOR_BOLD COLOR_MAGENTA "  Expiration Commands:\n" COLOR_RESET);
     printf(COLOR_GREEN "    ttl" COLOR_RESET " key                     " COLOR_DIM "Show remaining lifetime\n" COLOR_RESET);
-    printf(COLOR_GREEN "    expire" COLOR_RESET " key seconds          " COLOR_DIM "Set key expiration time\n" COLOR_RESET);
+    printf(COLOR_GREEN "    expire" COLOR_RESET " key seconds          " COLOR_DIM "Set key expiration time to (now + seconds)\n" COLOR_RESET);
+    printf(COLOR_GREEN "    pexpireat" COLOR_RESET " key unix_time     " COLOR_DIM "Set key expiration time to unix_time\n" COLOR_RESET);
     printf(COLOR_GREEN "    setex" COLOR_RESET " key seconds value     " COLOR_DIM "Create and Set key expiration time\n" COLOR_RESET);
 
     printf("\n");

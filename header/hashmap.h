@@ -52,7 +52,7 @@ typedef struct {
 } HashMap;
 
 /* hashmap operations */
-int hash_function();
+unsigned int hash_function(char *key);
 HashMap *map_init();
 void map_destroy(HashMap *map);
 

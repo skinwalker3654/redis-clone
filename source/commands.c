@@ -23,6 +23,7 @@ Command commands_table[] = {
     {"decrby",op_decrby},
     {"rename",op_rename},
     {"setex",op_setex},
+    {"pexpireat",op_pexpireat},
     {NULL,NULL},
 };
 
@@ -36,7 +37,7 @@ command_func find_command(char *name) {
     return NULL;
 }
 
-int execute(HashMap **map, command_t *comm) {
+int execute(HashMap **map, command_t *comm, execute_type type) {
     command_func func = find_command(comm->argv[0]);
     if(!func) {
         printf(COLOR_RED "\n(error) ERR unknown command '%s'\n" COLOR_RESET, comm->argv[0]);
@@ -44,6 +45,6 @@ int execute(HashMap **map, command_t *comm) {
         return -1;
     }
 
-    func(map,comm);
+    func(map,comm,type);
     return 0;
 }

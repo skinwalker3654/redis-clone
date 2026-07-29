@@ -6,6 +6,33 @@
 #define BUFF_SIZE 256
 static int source_pos = 0;
 
+void load_aof(HashMap **map) {
+    FILE *file = fopen("AOF","r");
+    if(!file) return;
+
+    char command[BUFF_SIZE];
+    while(fgets(command,sizeof(command),file)) {
+        command[strcspn(command,"\n")] = '\0';
+        command_t *comm = parser_command_init(); 
+        if(!comm) break;
+
+        source_pos = 0;
+        if(parser_parse_command(comm,command,source_pos)==-1) {
+            parser_command_destroy(comm);
+            break;
+        }
+
+        if(execute(map,comm,EXECUTE_FROM_AOF)==-1) {
+            parser_command_destroy(comm);
+            break;
+        }
+
+        parser_command_destroy(comm);
+    }
+
+    fclose(file);
+}
+
 int main(void) {
     FILE *file = fopen("PUT_NAME_HERE","r");
     if(!file) {
@@ -21,6 +48,8 @@ int main(void) {
 
     HashMap *map = map_init();
     if(!map) return 1;
+
+    load_aof(&map);
 
     char *buffer = NULL;
     size_t size = 0;
@@ -67,7 +96,7 @@ int main(void) {
             continue;
         }
 
-        if(execute(&map,command)==-1) {
+        if(execute(&map,command,EXECUTE_FROM_MAIN)==-1) {
             parser_command_destroy(command);
             free(buffer);
             size = 0;

@@ -44,6 +44,7 @@ redis/
 │   ├── operations.h
 │   └── parser.h
 │
+├── AOF
 ├── PUT_NAME_HERE
 └── README.md
 ```

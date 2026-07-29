@@ -161,7 +161,7 @@ void map_destroy(HashMap *map) {
 }
 
 /* hash function */
-unsigned int hash(char *key) {
+unsigned int hash_function(char *key) {
     unsigned int hash = 5381;
     int c;
 
@@ -173,7 +173,7 @@ unsigned int hash(char *key) {
 
 /* methods */
 int map_insert(HashMap *map, char *key, Value *value, int seconds) {
-    int index = hash(key);
+    int index = hash_function(key);
     Node *current = map->buckets[index];
 
     /* insert values in a chain for colisions */
@@ -181,6 +181,7 @@ int map_insert(HashMap *map, char *key, Value *value, int seconds) {
         if(strcmp(current->key,key)==0) {
             value_destroy(current->value);
             current->value = value;
+            current->value->expire_at = seconds == -1 ? -1 : time(NULL) + seconds;
             return 0;
         }
         current = current->next;
@@ -212,7 +213,7 @@ int map_insert(HashMap *map, char *key, Value *value, int seconds) {
 }
 
 Value *map_get(HashMap *map, char *key) {
-    int index = hash(key);
+    int index = hash_function(key);
     Node *current = map->buckets[index];
 
     while(current != NULL) {
@@ -232,7 +233,7 @@ Value *map_get(HashMap *map, char *key) {
 }
 
 int map_remove(HashMap *map, char *key) {
-    int index = hash(key);
+    int index = hash_function(key);
     Node *current = map->buckets[index];
     Node *prev = NULL;
 
@@ -260,7 +261,7 @@ int map_remove(HashMap *map, char *key) {
 }
 
 int map_rename(HashMap *map, char *key, char *new_key) {
-    int old_index = hash(key);
+    int old_index = hash_function(key);
 
     Node *prev = NULL;
     Node *current = map->buckets[old_index];
@@ -294,7 +295,7 @@ int map_rename(HashMap *map, char *key, char *new_key) {
         return -1;
     }
 
-    int new_index = hash(new_key);
+    int new_index = hash_function(new_key);
     current->next = map->buckets[new_index];
     map->buckets[new_index] = current;
 

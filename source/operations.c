@@ -131,6 +131,12 @@ int op_flushall(HashMap **map, command_t *comm, execute_type type) {
         return -1;
     }
 
+    if((*map)->keys == 0) {
+        if(type == EXECUTE_FROM_MAIN)
+            printf(COLOR_RED"(error) ERR map is empty\n"COLOR_RESET);
+        return -1;
+    }
+
     map_destroy(*map);
     *map = map_init();
     if(!map) return -1;

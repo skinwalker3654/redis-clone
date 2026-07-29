@@ -1,20 +1,20 @@
 CC = gcc
+AOF_FILE = AOF
 TARGET = redis
 SRC_DIR = source
 SOURCES = $(wildcard $(SRC_DIR)/*.c)
 
-all: $(TARGET)
 
 $(TARGET): $(SOURCES)
 	@echo "compiling redis-clone ..."
-	$(CC) $(SOURCES) -o $(TARGET) -g
+	$(CC) $(SOURCES) -o $(TARGET)
 
 run: $(TARGET)
-	@echo "executing redis-clon ..."
+	@echo "executing redis-clone ..."
 	./$(TARGET)
 
 clean:
-	@echo "removing executables ..."
-	rm -f $(TARGET)
+	@echo "removing executables and data..."
+	rm $(TARGET) $(AOF_FILE)
 
-.PHONY: all run clean
+.PHONY: run clean

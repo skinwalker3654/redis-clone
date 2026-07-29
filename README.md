@@ -65,7 +65,7 @@ make run
 
 --- 
 
-## Remove executables
+## Remove executables and database data
 ```bash
 make clean
 ```

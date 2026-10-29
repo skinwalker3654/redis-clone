@@ -35,7 +35,7 @@ int op_set(HashMap **map, command_t *comm, execute_type type) {
         FILE *file = fopen("AOF","a");
         if(!file) return 0;
 
-        fprintf(file,"set %s %s\n",comm->argv[1],comm->argv[2]);
+        fprintf(file,"set %s \"%s\"\n",comm->argv[1],comm->argv[2]);
         fclose(file);
     }
 
@@ -290,7 +290,7 @@ int op_rpush(HashMap **map, command_t *comm, execute_type type) {
 
             fprintf(file,"rpush %s ",comm->argv[1]);
             for(int i=2; i<comm->counter; i++) 
-                fprintf(file,"%s ",comm->argv[i]);
+                fprintf(file,"\"%s\" ",comm->argv[i]);
 
             fprintf(file,"\n");
             fclose(file);
@@ -334,7 +334,7 @@ int op_rpush(HashMap **map, command_t *comm, execute_type type) {
 
         fprintf(file,"rpush %s ",comm->argv[1]);
         for(int i=2; i<comm->counter; i++) 
-            fprintf(file,"%s ",comm->argv[i]);
+            fprintf(file,"\"%s\" ",comm->argv[i]);
 
         fprintf(file,"\n");
         fclose(file);
@@ -499,7 +499,7 @@ int op_lset(HashMap **map, command_t *comm, execute_type type) {
         FILE *file = fopen("AOF","a");
         if(!file) return 0;
 
-        fprintf(file,"lset %s %s %s\n",comm->argv[1],comm->argv[2],comm->argv[3]);
+        fprintf(file,"lset %s %s \"%s\"\n",comm->argv[1],comm->argv[2],comm->argv[3]);
         fclose(file);
     }
 
@@ -798,7 +798,7 @@ int op_setex(HashMap **map, command_t *comm, execute_type type) {
         FILE *file = fopen("AOF","a");
         if(!file) return 0;
 
-        fprintf(file,"set %s %s\n",comm->argv[1],comm->argv[3]);
+        fprintf(file,"set %s \"%s\"\n",comm->argv[1],comm->argv[3]);
         fprintf(file,"pexpireat %s %lld\n",comm->argv[1],(*map)->buckets[index]->value->expire_at);
         fclose(file);
     }
